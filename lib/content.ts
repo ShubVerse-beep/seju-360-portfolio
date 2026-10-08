@@ -160,6 +160,16 @@ export const experience = [
     points: ["Flutter apps with API and backend integration", "Real-time projects focused on UI/UX, performance and deployment"],
   },
   {
+    role: "1st Place Winner · Micronest",
+    org: "CU Innovation Hackathon",
+    period: "2025",
+    points: [
+      "Awarded 1st place at the CU Innovation Hackathon (2025)",
+      "Developed a financial solution to provide accessible loans for individuals unable to access traditional banking services",
+      "Secured direct entry into the Campus Tank competition, with the opportunity to compete for funding",
+    ],
+  },
+  {
     role: "AR/VR Intern",
     org: "Immersive Apps",
     period: "2025",

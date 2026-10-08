@@ -6,7 +6,7 @@ export function Journey() {
   return (
     <section id="journey" aria-labelledby="journey-title" className="relative px-6 py-24 md:py-32">
       <div className="mx-auto max-w-6xl">
-        <SectionTag>Experience & certifications</SectionTag>
+        <SectionTag>Experience, achievements & certifications</SectionTag>
         <h2 id="journey-title" data-reveal className="mt-4 text-balance text-4xl font-bold tracking-tight md:text-6xl">
           The journey so far
         </h2>
