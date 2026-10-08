@@ -1,13 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { BriefcaseBusiness as Linkedin, Mail, Phone, Send } from "lucide-react"
+import { BriefcaseBusiness as Linkedin, Mail, Phone, Send, Loader2 } from "lucide-react"
 import { profile } from "@/lib/content"
 import { SectionTag } from "./section-tag"
 
-type FormState = { firstName: string; lastName: string; email: string; message: string; consent: boolean }
+type FormState = {
+  firstName: string
+  lastName: string
+  email: string
+  message: string
+  consent: boolean
+  honeypot: string
+}
 
-const initial: FormState = { firstName: "", lastName: "", email: "", message: "", consent: false }
+const initial: FormState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  message: "",
+  consent: false,
+  honeypot: "",
+}
 
 function PayloadPreview({ form }: { form: FormState }) {
   const val = (v: string, placeholder: string) =>
@@ -44,15 +58,71 @@ function PayloadPreview({ form }: { form: FormState }) {
 export function Contact() {
   const [form, setForm] = useState<FormState>(initial)
   const [status, setStatus] = useState<string>("")
+  const [statusType, setStatusType] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }))
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const subject = encodeURIComponent(`Portfolio enquiry from ${form.firstName} ${form.lastName}`.trim())
-    const body = encodeURIComponent(`${form.message}\n\n— ${form.firstName} ${form.lastName}\n${form.email}`)
-    window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`
-    setStatus("Opening your email app with the message ready to send.")
+
+    if (!form.firstName.trim()) {
+      setStatus("Please enter your first name.")
+      setStatusType("error")
+      return
+    }
+
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setStatus("Please provide a valid email address.")
+      setStatusType("error")
+      return
+    }
+
+    if (!form.message.trim()) {
+      setStatus("Please enter your message.")
+      setStatusType("error")
+      return
+    }
+
+    if (!form.consent) {
+      setStatus("Please agree to be contacted back.")
+      setStatusType("error")
+      return
+    }
+
+    setIsSubmitting(true)
+    setStatus("Sending message…")
+    setStatusType("loading")
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          message: form.message,
+          honeypot: form.honeypot,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setStatus("Message sent successfully! I'll get back to you soon.")
+        setStatusType("success")
+        setForm(initial)
+      } else {
+        setStatus(data.error || "Unable to send message. Please try again.")
+        setStatusType("error")
+      }
+    } catch {
+      setStatus("Network error while sending message. Please try again.")
+      setStatusType("error")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const inputCls =
@@ -98,6 +168,18 @@ export function Contact() {
         </div>
 
         <form data-reveal onSubmit={onSubmit} className="glass flex flex-col gap-4 rounded-[2rem] p-6 md:p-8">
+          {/* Honeypot field for anti-spam */}
+          <div className="sr-only" aria-hidden="true">
+            <label htmlFor="hp_comment">Do not fill this field</label>
+            <input
+              id="hp_comment"
+              tabIndex={-1}
+              autoComplete="off"
+              value={form.honeypot}
+              onChange={(e) => update("honeypot", e.target.value)}
+            />
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-2 text-sm">
               <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">First name</span>
@@ -128,11 +210,30 @@ export function Contact() {
           </label>
           <button
             type="submit"
-            className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 font-medium text-background transition-transform hover:scale-[1.02]"
+            disabled={isSubmitting}
+            className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 font-medium text-background transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
           >
-            Send Message <Send className="size-4" aria-hidden="true" />
+            {isSubmitting ? (
+              <>
+                Sending... <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                Send Message <Send className="size-4" aria-hidden="true" />
+              </>
+            )}
           </button>
-          <p role="status" aria-live="polite" className="min-h-5 text-center font-mono text-xs text-status">
+          <p
+            role="status"
+            aria-live="polite"
+            className={`min-h-5 text-center font-mono text-xs transition-colors ${
+              statusType === "error"
+                ? "text-red-400"
+                : statusType === "loading"
+                ? "text-accent"
+                : "text-status"
+            }`}
+          >
             {status}
           </p>
         </form>
