@@ -37,10 +37,10 @@ export function About() {
           >
             <Image
               src={profile.photo || "/placeholder.svg"}
-              alt={`${profile.fullName} smiling in a navy blazer`}
+              alt={`${profile.fullName} smiling`}
               fill
               sizes="(min-width: 768px) 384px, 90vw"
-              className="object-cover object-[50%_20%]"
+              className="object-cover object-[50%_25%]"
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgba(7,6,11,0.8))]" />
             <span className="glass absolute left-4 top-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest">
