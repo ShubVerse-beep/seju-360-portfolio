@@ -7,6 +7,7 @@ const grotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-grotesk', 
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains', display: 'swap' })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://seju-360-portfolio.vercel.app'),
   title: 'Sejal Rai — App Developer & XR Creator',
   description:
     'Portfolio of Sejal Manoj Rai: Flutter app developer, AR/VR creator and web designer. Projects, skills, certifications and contact.',
